@@ -3,21 +3,37 @@ import os
 from canvasapi import Canvas
 from canvasapi.todo import Todo
 from bs4 import BeautifulSoup
-
+import dateutil.parser
 import pytermgui as ptg
 
 API_URL = "https://canvas.calpoly.edu/"
+AM_PM = False
 
 
 class Detail(ptg.Container):
     def set_todo(self, todo: Todo) -> None:
+        assignment = todo.assignment
         # TODO: do something other than just deleting the html lol
-        description = BeautifulSoup(todo.assignment["description"]).text
+        description = BeautifulSoup(assignment["description"]).text
+
+        due_at = assignment["due_at"]
+        if due_at is not None:
+            # reformat time and convert from UTC to local timezone
+            due_at = (
+                dateutil.parser.isoparse(due_at)
+                .astimezone()
+                .strftime(
+                    f"%a %b %d %Y {'%I' if AM_PM else '%H'}:%M {'%p' if AM_PM else ''}"
+                )
+            )
 
         self.set_widgets(
             [
                 ptg.Label(todo.context_name),
-                ptg.Label(f"[bold]{todo.assignment['name']}[/]"),
+                ptg.Label(f"[bold]{assignment['name']}[/]"),
+                ptg.Label(
+                    f"[italic][dim]Due {due_at}[/]" if due_at is not None else ""
+                ),
                 ptg.Label(""),
                 ptg.Label(description),
             ]
