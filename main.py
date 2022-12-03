@@ -11,6 +11,7 @@ API_URL = "https://canvas.calpoly.edu/"
 
 class Detail(ptg.Container):
     def set_todo(self, todo: Todo) -> None:
+        # TODO: do something other than just deleting the html lol
         description = BeautifulSoup(todo.assignment["description"]).text
 
         self.set_widgets(
@@ -38,7 +39,7 @@ with ptg.WindowManager() as manager:
 
     todos = canvas.get_todo_items()
 
-    detail = Detail()
+    detail = Detail(box=ptg.boxes.EMPTY)
 
     todo_widgets = []
     for todo in todos:
@@ -53,7 +54,7 @@ with ptg.WindowManager() as manager:
     manager.add(
         ptg.Window(
             *todo_widgets,
-            box="SINGLE",
+            box=ptg.boxes.SINGLE,
             vertical_align=ptg.VerticalAlignment.TOP,
         )
     )
