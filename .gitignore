@@ -1,0 +1,5 @@
+# Client secrets
+.env
+
+# venv
+venv
