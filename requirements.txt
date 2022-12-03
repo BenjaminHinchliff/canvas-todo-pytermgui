@@ -1,0 +1,4 @@
+beautifulsoup4==4.11.1
+canvasapi==3.0.0
+pytermgui==7.3.0
+python-dotenv==0.21.0
