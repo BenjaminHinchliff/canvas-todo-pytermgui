@@ -1,3 +1,4 @@
+from typing import Any
 from dotenv import load_dotenv
 import os
 from canvasapi import Canvas
@@ -11,10 +12,28 @@ AM_PM = False
 
 
 class Detail(ptg.Container):
+    def __init__(self, **attrs: Any) -> None:
+        super().__init__(**attrs)
+        self.window = None
+
+    def show(self, manager: ptg.WindowManager):
+        if self.window is not None:
+            self.window.close()
+        self.window = ptg.Window(
+            self,
+            box=ptg.boxes.SINGLE,
+            vertical_align=ptg.VerticalAlignment.TOP,
+            width=60,
+            height=30,
+        ).center()
+        manager.add(self.window)
+
     def set_todo(self, todo: Todo) -> None:
         assignment = todo.assignment
         # TODO: do something other than just deleting the html lol
-        description = BeautifulSoup(assignment["description"]).text
+        description = BeautifulSoup(
+            assignment["description"], features="html.parser"
+        ).text
 
         due_at = assignment["due_at"]
         if due_at is not None:
@@ -50,8 +69,8 @@ canvas = Canvas(API_URL, token)
 
 
 with ptg.WindowManager() as manager:
-    manager.layout.add_slot("Todos", width=0.3)
-    manager.layout.add_slot("Detail")
+    manager.layout.add_slot("Todos")
+    # manager.layout.add_slot("Detail", width=)
 
     todos = canvas.get_todo_items()
 
@@ -59,7 +78,11 @@ with ptg.WindowManager() as manager:
 
     todo_widgets = []
     for todo in todos:
-        handler = lambda _, todo=todo: detail.set_todo(todo)
+
+        def handler(_, todo=todo):
+            detail.show(manager)
+            detail.set_todo(todo)
+
         button = ptg.Button(
             todo.assignment["name"],
             on_click=handler,
@@ -70,10 +93,8 @@ with ptg.WindowManager() as manager:
     manager.add(
         ptg.Window(
             *todo_widgets,
-            box=ptg.boxes.SINGLE,
+            box=ptg.boxes.EMPTY,
             vertical_align=ptg.VerticalAlignment.TOP,
-        )
-    )
-    manager.add(
-        ptg.Window(detail, box="SINGLE", vertical_align=ptg.VerticalAlignment.TOP)
+        ),
+        animate=False,
     )
